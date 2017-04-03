@@ -25,11 +25,13 @@ post_put_parser.add_argument(
 # above all are test
 
 #ProjectApi
+#get method
 project_get_parser = reqparse.RequestParser()
 project_get_parser.add_argument(
 	'limit',
 	type=int,
 	required=False)
+#post method
 project_post_parser = reqparse.RequestParser()
 project_post_parser.add_argument(
 	'project_name',
@@ -37,9 +39,20 @@ project_post_parser.add_argument(
 	required=True)
 
 #TaskApi
+#get method
+task_get_parser = reqparse.RequestParser()
+task_get_parser.add_argument(
+	'')
+task_get_parser.add_argument(
+	'project_id',
+	type=str)
+task_get_parser.add_argument(
+	'page',
+	type=int)
+#post method
 task_post_parser = reqparse.RequestParser()
 task_post_parser.add_argument(
-	'type',
+	'category',
 	type=int,
 	required=True)
 task_post_parser.add_argument(

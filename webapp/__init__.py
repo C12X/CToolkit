@@ -7,7 +7,8 @@ from flask import(
 from .models import mongo
 from .extensions import(
 	rest_api,
-	celery)
+	celery,
+	redis_store)
 from .controllers.home import home_blueprint
 from .controllers.project import project_blueprint
 from .controllers.scan import scan_blueprint
@@ -22,6 +23,9 @@ def create_app(object_name):
 
 	#database
 	mongo.init_app(app)
+
+	#redis
+	redis_store.init_app(app)
 
 	#blueprint
 	app.register_blueprint(home_blueprint)

@@ -4,12 +4,13 @@ from webapp import create_app
 from webapp.models import mongo
 from webapp.models import Project
 from webapp.controllers.tasks import port_scanner as ps
+from webapp.extensions import celery, redis_store
 
 env = os.environ.get('WEBAPP_ENV', 'dev')
 app = create_app('webapp.config.%sConfig' % env.capitalize())
 
 manager = Manager(app)
-manager.add_command("server", Server(host="192.168.80.131"))
+manager.add_command("server", Server(host="test"))
 
 @manager.shell
 def make_shell_context():
@@ -17,7 +18,9 @@ def make_shell_context():
 		app=app,
 		mongo=mongo,
 		Project=Project,
-		ps=ps
+		ps=ps,
+		celery=celery,
+		redis=redis_store
 	)
 
 if __name__ == '__main__':

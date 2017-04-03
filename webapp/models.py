@@ -13,9 +13,13 @@ class Project(mongo.Document):
 	port_info = mongo.ReferenceField(PortInfo)
 
 class Task(mongo.Document):
-	task_id = mongo.StringField(required=True)
-	category = mongo.StringField(required=True)
+	category = mongo.IntField(required=True)
 	target = mongo.StringField(required=True)
 	date_created = mongo.DateTimeField(required=True)
-	status = mongo.StringField(required=True)
 	project = mongo.ReferenceField(Project,required=True)
+	stdout = mongo.StringField()
+	stderr = mongo.StringField()
+	# celery task info
+	celery_id = mongo.StringField()
+	status = mongo.StringField(default='PENDING')
+	result = mongo.ListField(default=[])

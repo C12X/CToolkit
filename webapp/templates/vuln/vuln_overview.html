@@ -1,0 +1,80 @@
+{% extends "frame.html" %}
+
+{% block style %}
+	<link href="/static/lib/datatable/zui.datatable.css" rel="stylesheet">
+{% endblock %}
+
+{% block panel_title %}
+	{{ "Vulnerability"|title}}
+{% endblock %}
+
+{% block panel_body %}
+{% raw %}
+<div class="container">
+<table class="table table-hover table-borderless datatable">
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>Project Name</th>
+			<th>Created Time</th>
+			<th>Status</th>
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr is="project-list" v-for="(project,index) in projects" v-bind:project="project" v-bind:index="index"></tr>
+	</tbody>
+</table>
+</div>
+<div class="text-center" v-if="loading">
+	<i class="icon-4x icon-spin icon-spinner-snake"></i>
+</div>
+{% endraw %}
+{% endblock %}
+
+{% block script %}
+{% raw %}
+<script src="/static/lib/datatable/zui.datatable.js"></script>
+<script>
+Vue.component('project-list',{
+	template: ' <tr>\
+					<td>{{index}}</td>\
+					<td>{{project.project_name}}</td>\
+					<td>{{project.date_created}}</td>\
+					<td><i class="icon-check-circle text-success"></i></td>\
+					<td>\
+						<a :href="project.project_id" class="btn btn-sm"><i class="icon-search"></i> detail</a>\
+						<a href="#" class="btn btn-sm text-danger"><i class="icon-trash"></i> delete</a>\
+					</td>\
+				</tr>',
+	props: ['project','index']
+});
+s = {}
+var app = new Vue({
+	el: "#panel",
+	data: {
+		projects:[],
+		loading:true
+	},
+	updated: function(){
+		$('table.datatable').datatable({sortable: true});
+		$('tr').click(function(){console.log(s=this)})
+	}
+});
+
+$.ajax({
+	type: 'get',
+	url: '/api/project/',
+	success: function(data){
+		app.loading=false;
+		app.projects=data;
+	},
+	error: function(data){
+		console.log(data);
+		new $.zui.Messager('Server error', {type:'warning', icon:'warning-danger'}).show();
+	}
+});
+
+</script>
+{% endraw %}
+{% endblock %}

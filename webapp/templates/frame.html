@@ -20,6 +20,7 @@
   {% endblock %}
 </head>
 <body>
+<div id="main">
   <header>
     <div class="navbar navbar-inverse" id="navbar" role="banner">
       <div class="container">
@@ -67,6 +68,7 @@
         <ul class="nav nav-primary">
           <li><a href="javascript:;"><i class="icon-history"></i> History</a></li>
           <li><a href={{url_for('project.overview')}}><i class="icon-stack"></i> Projects</a></li>
+          <li><a href={{url_for('project.overview')}}><i class="icon-eye-open"></i> Vulnerability</a></li>
           <li class="nav-parent">
             <a href="javascript:;"><i class="icon-eye-open"></i> Vulnerability</a>
             <ul class="nav">
@@ -141,7 +143,7 @@
       </p>
     </div>
   </footer>
-  <!-- modal dialog -->
+
   <div class="modal fade" id="create_project">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -149,7 +151,6 @@
           <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">关闭</span></button>
           <h4 class="modal-title">Add Project</h4>
         </div>
-
         <div class="modal-body">
           <div class="input-group">
             <span class="input-group-addon">Project Name</span>
@@ -160,16 +161,19 @@
           <button class="btn btn-default" data-dismiss="modal">close</button>
           <button type="submit" class="btn btn-primary" >submit</button>
         </div>
-        <!-- </form> -->
       </div>
     </div>
   </div>
+  {% block modal%}
+  {% endblock %}
+</div>
   <!-- jQuery (ZUI中的Javascript组件依赖于jQuery) -->
   <script src="/static/js/jquery.js"></script>
   <!-- ZUI Javascript组件 -->
   <script src="/static/js/zui.js"></script>
   <!-- vue.js -->
   <script src="/static/js/vue.js"></script>
+
   <script>
     $(document).ready(function(){
       $('button[type=submit]').click(function(){
@@ -198,11 +202,14 @@
   </script>
   {% block script %}
   <script>
-  Vue.component('component-tr',{
+  var componentTr ={
     template: "<tr><th>1111111111</th><th>2222222222</th></tr>"
-  });
+  };
   var app = new Vue({
     el: '#panel',
+    components: {
+      'component-tr': componentTr
+    },
     data: {
       message: 'You loaded this page on ' + new Date(),
       items:[1,2,3,4,5,6,7,8,9,10]

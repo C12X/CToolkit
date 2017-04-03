@@ -12,59 +12,121 @@
 		<table class="table table-hover">
 			<thead>
 				<tr>
-					<th>tools</th>
-					<th>target</th>
-					<th>level</th>
-					<th>help</th>
-					<th>action</th>
+					<th class="text-center">tools</th>
+					<th class="text-center">target</th>
+					<th class="text-center">level</th>
+					<th class="text-center">help</th>
+					<th class="text-center">action</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr is="tool-list" v-bind:tool="tool" v-for="tool in tools"></tr>
+				<tr class="text-center" is="tool-list" v-bind:tool="tool" v-for="tool in tools"></tr>
 			</tbody>
 		</table>
 	</div>
-
+	<hr>
 	<div class="container">
 		<table class="table table-hover">
+		<!-- <table class="table table-hover table-fixed"> -->
 			<thead>
 				<tr>
-					<th>history</th>
+					<th class="text-center">#</th>
+					<th class="text-center">tasks</th>
+					<th class="text-center">target</th>
+					<th class="text-center">date</th>
+					<th class="text-center">status</th>
+					<th class="text-center">result</th>
 				</tr>
 			</thead>
+			<tbody v-if="loading">
+			</tbody v-else>
+				<tr class="text-center" is="task-list" v-bind:task="task" v-bind:index="index" v-for="(task,index) in tasks" v-on:show_detail="task_detail(task.task_id)"></tr>
+			<tbody>
+
+			</tbody>
 		</table>
-	</div>
-	<div class="text-center" v-if="loading">
-		<i class="icon-4x icon-spin icon-spinner-snake"></i>
 	</div>
 {% endraw %}
 {% endblock %}
 
+<!-- modal block -->
+{% block modal %}
+{% raw %}
+	<div class="modal fade" id="detail" v-if="detail.task_id">
+	  <div class="modal-dialog modal-lg">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">关闭</span></button>
+	        <h4 class="modal-title">{{detail.task_id}}</h4>
+	      </div>
+
+	      <div class="modal-body">
+	      <template v-for="(result,index) in detail.task_result">
+	        <div class="panel-group">
+	          <div class="panel panel-primary">
+	            <div class="panel-heading" >
+	              <h4 class="panel-title">
+	                <a data-toggle="collapse" :data-parent="'#host'+index" :href="'#host'+index">{{result.host}}</a>
+	              </h4>
+	            </div>
+	            <div :id="'host'+index" class="panel-collapse collapse in">
+	              <div class="panel-body">
+	                <table class="table table-hover table-condensed" >
+	                  <tbody>
+	                  	<template v-for="port in result.portinfo">
+	                    <tr>
+	                      <td>{{port.portid}}</td>
+	                      <td>{{port.state}}</td>
+	                      <td>{{port.service}}</td>
+	                      <td>{{port.banner}}</td>
+	                    </tr>
+	                    </template>
+	                  </tbody>
+	                </table>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	      </template>
+
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+	        <button type="button" class="btn btn-primary">保存</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+{% endraw %}
+{% endblock %}
+
+<!-- javascript block -->
 {% block script %}
 {% raw %}
-<script>
-	Vue.component('tool-list',{
-		template: '<tr>\
-					<td>{{tool.name}}</td>\
-					<td>\
-						<input class="form-control" :placeholder="tool.placeholder" v-model="tool.target" :autofocus="tool.focus">\
-					</td>\
-					<td>\
-						<div class="input-group center-block">\
-							<select class="form-control" v-model="tool.level">\
-								<option value="0">0</option>\
-								<option value="1">1</option>\
-								<option value="2">2</option>\
-							</select>\
-						</div>\
-					</td>\
-					<td>\
-						<a href="#" class="btn"><i class="icon icon-book"></i></a>\
-					</td>\
-					<td>\
-						<a v-on:click="commit" class="btn"><i class="icon icon-play"></i></a>\
-					</td>\
-				</tr>',
+	<script>
+	var toolList = {
+		template: '\
+		<tr>\
+			<td>{{tool.name}}</td>\
+			<td>\
+				<input class="form-control" :placeholder="tool.placeholder" v-model="tool.target" :autofocus="tool.focus">\
+			</td>\
+			<td>\
+				<div class="input-group center-block">\
+					<select class="form-control" v-model="tool.level">\
+						<option value="0">0</option>\
+						<option value="1">1</option>\
+						<option value="2">2</option>\
+					</select>\
+				</div>\
+			</td>\
+			<td>\
+				<a href="#" class="btn"><i class="icon icon-book"></i></a>\
+			</td>\
+			<td>\
+				<a v-on:click="commit" class="btn"><i class="icon icon-play"></i></a>\
+			</td>\
+		</tr>',
 		props: ['tool'],
 		methods:{
 			commit: function(){
@@ -76,13 +138,14 @@
 						type: 'post',
 						url: '/api/task/',
 						data: {
-							type: this.tool.type,
+							category: this.tool.category,
 							target: this.tool.target,
 							level: this.tool.level,
 							project_id: app.project_id
 						},
 						success: function(data){
-							console.log(data);
+							app.tasks.unshift(data);
+							flash(); 
 						},
 						error: function(data){
 							console.log(data);
@@ -91,32 +154,76 @@
 				}
 			}
 		}
-	});
+	}
+	var taskList = {
+		template: '\
+			<tr>\
+				<td>{{index}}</td>\
+				<td>{{task.task_category|category}}</td>\
+				<td class="text-wordwrap">{{task.task_target}}</td>\
+				<td>{{task.date_created}}</td>\
+				<td>\
+					<div style="margin:auto" class="progress progress-striped" v-bind:class="{active: task.task_status!=\'SUCCESS\'}">\
+						<div class="progress-bar" v-bind:class="{\'progress-bar-success\': task.task_status==\'SUCCESS\'}" style="width: 100%">\
+							<span>{{task.task_status.toLowerCase()}}</span>\
+						</div>\
+					</div>\
+				</td>\
+				<td>\
+					<!-- <button class="btn btn-primary btn-sm" data-title="new title" data-target="#dialog" data-toggle="modal"><i class="icon icon-zoom-in"></i> view</button> -->\
+					<button class="btn btn-sm btn-primary" v-bind:disabled="task.task_status!=\'SUCCESS\'" v-on:click="show_detail"><i class="icon icon-zoom-in" v-bind:disabled="task.task_status!=\'SUCCESS\'"></i> view</button>\
+				</td>\
+			</tr>',
+		props: ['task','index'],
+		filters: {
+			category: function(value){
+				switch(value){
+					case 0: return "port scanner";
+					case 1: return "web dir burp";
+					case 2: return "sub domain";
+				}
+			}
+		},
+		methods: {
+			show_detail: function(){
+				this.$emit('show_detail');
+			}
+		}
+	};
 
-	Vue.component('task-list',{
-	template: ' <tr>\
-					<td>{{index}}</td>\
-					<td>{{project.project_name}}</td>\
-					<td>{{project.date_created}}</td>\
-					<td><i class="icon-check-circle text-success"></i></td>\
-					<td>\
-						<a :href="project.project_id" class="btn btn-sm"><i class="icon-search"></i>detail</a>\
-						<a href="#" class="btn btn-sm text-danger"><i class="icon-trash"></i>delete</a>\
-					</td>\
-				</tr>',
-	props: ['task']
-	});
 	var id_index = window.location.pathname.lastIndexOf('/')+1;
 	var app = new Vue({
-		el: "#panel",
+		el: "#main",
+		components: {
+			'tool-list': toolList,
+			'task-list': taskList,
+		},
 		data: {
 			loading: true,
 			project_id: window.location.pathname.substr(id_index),
 			project_name:"",
-			tools: [{type:0,name:"port scanner",placeholder:"ip address or hostname",target:"",level:1},
-					{type:1,name:"web dir burp",placeholder:"url",target:"",level:1},
-					{type:2,name:"sub domain",placeholder:"hostname",target:"",level:1}
-				   ]
+			tools: [{category:0,name:"port scanner",placeholder:"ip address or hostname",target:"",level:1},
+					{category:1,name:"web dir burp",placeholder:"url",target:"",level:1},
+					{category:2,name:"sub domain",placeholder:"hostname",target:"",level:1}
+				   ],
+			tasks: [],
+			task: {task_name:'test'},
+			detail: {task_id:'',task_result:[]}
+		},
+		methods: {
+			task_detail: function(task_id){
+				this.detail.task_id = task_id;
+				$.ajax({
+					url: "/api/task/"+task_id,
+					success: function(data){
+						app.detail.task_result = data.task_result;
+						$('#detail').modal('show');
+						$('#detail').on('hidden.zui.modal', function() {
+							this.detail = {task_id:'',task_result:[]};
+						})
+					}
+				});
+			}
 		}
 	})
 	$.ajax({
@@ -132,6 +239,34 @@
 				new $.zui.Messager('Server error', {type:'warning', icon:'warning-danger', time:2000}).show();
 		}
 	});
-</script>
+	//get tasks status
+	function get_tasks_status(){
+		$.ajax({
+			type: 'get',
+			url: '/api/task/',
+			data: {project_id: app.project_id},
+			success: function(data){
+				console.log(data);
+				app.tasks=data;
+			},
+			error: function(data){
+				console.log(data);
+			}
+		})
+	};
+	get_tasks_status();
+	function flash(){
+		var poll =setInterval(function(){
+			var flag = false;
+			for(var i=0; i<app.tasks.length; i++){
+				if(app.tasks[i]['task_status']!='SUCCESS')
+					flag = true;
+			};
+			if(flag) get_tasks_status();
+			else clearInterval(poll);
+		},5000);
+	}
+	flash();
+	</script>
 {% endraw %}
 {% endblock %}
