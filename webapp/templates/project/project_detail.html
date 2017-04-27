@@ -1,5 +1,10 @@
 {% extends "frame.html" %}
 
+{% block style %}
+	<style type="text/css">
+	</style>
+{% endblock %}
+
 {% block panel_title %}
 {% raw %}
 	{{project_name?project_name:"project not found"}}
@@ -59,8 +64,10 @@
 	        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">关闭</span></button>
 	        <h4 class="modal-title">{{detail.task_id}}</h4>
 	      </div>
-
 	      <div class="modal-body">
+	      <div class="lead" v-if="!detail.task_result.length">
+	      	Hosts not up, or ports not found!
+	      </div>
 	      <template v-for="(result,index) in detail.task_result">
 	        <div class="panel-group">
 	          <div class="panel panel-primary">
@@ -78,7 +85,7 @@
 	                      <td>{{port.portid}}</td>
 	                      <td>{{port.state}}</td>
 	                      <td>{{port.service}}</td>
-	                      <td>{{port.banner}}</td>
+	                      <td width="50%">{{port.banner}}</td>
 	                    </tr>
 	                    </template>
 	                  </tbody>
@@ -87,8 +94,9 @@
 	            </div>
 	          </div>
 	        </div>
-	      </div>
 	      </template>
+
+	      </div>
 
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -157,7 +165,7 @@
 	}
 	var taskList = {
 		template: '\
-			<tr>\
+			<tr @click="processing">\
 				<td>{{index}}</td>\
 				<td>{{task.task_category|category}}</td>\
 				<td class="text-wordwrap">{{task.task_target}}</td>\
@@ -170,8 +178,8 @@
 					</div>\
 				</td>\
 				<td>\
-					<!-- <button class="btn btn-primary btn-sm" data-title="new title" data-target="#dialog" data-toggle="modal"><i class="icon icon-zoom-in"></i> view</button> -->\
 					<button class="btn btn-sm btn-primary" v-bind:disabled="task.task_status!=\'SUCCESS\'" v-on:click="show_detail"><i class="icon icon-zoom-in" v-bind:disabled="task.task_status!=\'SUCCESS\'"></i> view</button>\
+					 <button class="btn btn-sm btn-danger" v-on:click="delete_task"><i class="icon icon-trash"></i></button>\
 				</td>\
 			</tr>',
 		props: ['task','index'],
@@ -187,6 +195,37 @@
 		methods: {
 			show_detail: function(){
 				this.$emit('show_detail');
+			},
+			delete_task: function(){
+				var task_id = this.task.task_id;
+				$.ajax({
+					url: '/api/task/'+task_id,
+					type: 'delete',
+					success: function(data){
+						console.log(data);
+						new $.zui.Messager('Delete completed', {type:'success', icon:'ok-sign', time:2000}).show();
+						get_tasks_status();
+					},
+					error: function(data){
+						console.log(data)
+					}
+				})
+			},
+			processing: function(){
+				if(this.task.task_status != 'PENDING')
+					return 1;
+				$.ajax({
+					url: '/api/task/'+this.task.task_id,
+					data: {process: true},
+					type: 'get',
+					success: function(data){
+						var process = new $.zui.ModalTrigger({
+							title: 'process',
+							custom: '<textarea style="color: #0cf71e; background-color: #303030;SCROLLBAR-FACE-COLOR: #ffffff; " rows="20" class="form-control">'+data.process+'</textarea>',
+						});
+						process.show();
+					}
+				})
 			}
 		}
 	};
@@ -213,13 +252,17 @@
 		methods: {
 			task_detail: function(task_id){
 				this.detail.task_id = task_id;
+				$('#detail').on('show.zui.modal', function(){
+					console.log('test')
+				});
+				$('#detail').modal('show');
 				$.ajax({
-					url: "/api/task/"+task_id,
+					url: '/api/task/'+task_id,
 					success: function(data){
 						app.detail.task_result = data.task_result;
-						$('#detail').modal('show');
-						$('#detail').on('hidden.zui.modal', function() {
-							this.detail = {task_id:'',task_result:[]};
+						$('#detail').modal();
+						$('#detail').on('hidden.zui.modal', function(){
+							app.detail = {task_id:'',task_result:[]};
 						})
 					}
 				});
@@ -233,6 +276,7 @@
 			app.project_name=data.project_name;
 		},
 		error: function(data){
+			console.log(data);
 			if(data.status == 404)
 				new $.zui.Messager('Project not found', {type:'warning', icon:'warning-sign', time:2000}).show();
 			else
@@ -264,7 +308,7 @@
 			};
 			if(flag) get_tasks_status();
 			else clearInterval(poll);
-		},5000);
+		},10000);
 	}
 	flash();
 	</script>

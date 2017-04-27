@@ -1,7 +1,7 @@
 {% extends "frame.html" %}
 
 {% block style %}
-	<link href="/static/lib/datatable/zui.datatable.css" rel="stylesheet">
+	<!-- <link href="/static/lib/datatable/zui.datatable.css" rel="stylesheet"> -->
 {% endblock %}
 
 {% block panel_title %}
@@ -11,7 +11,7 @@
 {% block panel_body %}
 {% raw %}
 <div class="container">
-<table class="table table-hover table-borderless datatable">
+<table class="table table-hover">
 	<thead>
 		<tr>
 			<th>#</th>
@@ -36,7 +36,7 @@
 {% raw %}
 <script src="/static/lib/datatable/zui.datatable.js"></script>
 <script>
-Vue.component('project-list',{
+var projectList = {
 	template: ' <tr>\
 					<td>{{index}}</td>\
 					<td>{{project.project_name}}</td>\
@@ -44,36 +44,58 @@ Vue.component('project-list',{
 					<td><i class="icon-check-circle text-success"></i></td>\
 					<td>\
 						<a :href="project.project_id" class="btn btn-sm"><i class="icon-search"></i> detail</a>\
-						<a href="#" class="btn btn-sm text-danger"><i class="icon-trash"></i> delete</a>\
+						<a href="#" class="btn btn-sm btn-danger" v-on:click="delete_project"><i class="icon-trash"></i></a>\
 					</td>\
 				</tr>',
-	props: ['project','index']
-});
-s = {}
+	props: ['project','index'],
+	methods: {
+		delete_project: function(){
+			console.log('test');
+			$.ajax({
+				url: '/api/project/'+this.project.project_id,
+				type: 'delete',
+				success: function(data){
+					console.log(data);
+					new $.zui.Messager('Delete completed', {type:'success', icon:'ok-sign', time:2000}).show();
+					flash();
+				},
+				error: function(data){
+					console.log(data);
+				}
+			});
+		}
+	}
+};
+
 var app = new Vue({
 	el: "#panel",
+	components: {
+		'project-list': projectList
+	},
 	data: {
 		projects:[],
 		loading:true
 	},
-	updated: function(){
-		$('table.datatable').datatable({sortable: true});
-		$('tr').click(function(){console.log(s=this)})
+	created: function(){
+		flash();
 	}
 });
 
-$.ajax({
-	type: 'get',
-	url: '/api/project/',
-	success: function(data){
-		app.loading=false;
-		app.projects=data;
-	},
-	error: function(data){
-		console.log(data);
-		new $.zui.Messager('Server error', {type:'warning', icon:'warning-danger'}).show();
-	}
-});
+function flash(){
+	$.ajax({
+		type: 'get',
+		url: '/api/project/',
+		success: function(data){
+			app.loading=false;
+			app.projects=data;
+		},
+		error: function(data){
+			console.log(data);
+			new $.zui.Messager('Server error', {type:'warning', icon:'warning-danger'}).show();
+		}
+	});
+};
+
 
 </script>
 {% endraw %}

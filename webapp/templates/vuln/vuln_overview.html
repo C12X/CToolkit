@@ -1,7 +1,29 @@
 {% extends "frame.html" %}
 
 {% block style %}
-	<link href="/static/lib/datatable/zui.datatable.css" rel="stylesheet">
+	<style type="text/css">
+	.option{
+	  min-height: 100px;
+	  margin-bottom: 20px;
+	  border-radius: 8px;
+	  background: #ECEFF1;
+
+	  display: -webkit-box;
+	  -webkit-box-orient: horizontal;
+	  -webkit-box-pack: center;
+	  -webkit-box-align: center;
+	}
+	.option:hover{ 
+		background-color:#607D8B;
+		color:white;
+	}
+	#addvulnName{
+		margin-top: 10px;
+	}
+	a{
+		cursor: pointer;
+	}
+</style>
 {% endblock %}
 
 {% block panel_title %}
@@ -10,71 +32,103 @@
 
 {% block panel_body %}
 {% raw %}
-<div class="container">
-<table class="table table-hover table-borderless datatable">
-	<thead>
-		<tr>
-			<th>#</th>
-			<th>Project Name</th>
-			<th>Created Time</th>
-			<th>Status</th>
-			<th>Action</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr is="project-list" v-for="(project,index) in projects" v-bind:project="project" v-bind:index="index"></tr>
-	</tbody>
-</table>
-</div>
-<div class="text-center" v-if="loading">
-	<i class="icon-4x icon-spin icon-spinner-snake"></i>
+	<div class="row">
+	  <vuln-list v-if="vulns.length" v-for="vuln in vulns" v-bind:vuln="vuln"></vuln-list>
+	  <div class="col-md-4 col-sm-6 col-lg-3">
+	    <a href="#" data-toggle="modal" data-target="#addvuln">
+	      <div class="option lead">
+	        <i class="icon icon-2x icon-plus"></i>
+	      </div>
+	    </a>
+	  </div>
+	</div>
+{% endraw %}
+{% endblock %}
+
+{% block modal %}
+{% raw %}
+<div class="modal fade" id="addvuln">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">close</span></button>
+        <h4 class="modal-title">Add vulnsitory</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container" id="addvulnName">
+	        <div class="form-group">
+	          <div class="input-group">
+	            <span class="input-group-addon">title</span>
+	            <input type="text" class="form-control" placeholder="input the new vulnsitory title" v-model="vuln_title">
+	          </div>
+	        </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">close</button>
+        <button type="button" class="btn btn-primary" @click="add">submit</button>
+      </div>
+    </div>
+  </div>
 </div>
 {% endraw %}
 {% endblock %}
 
 {% block script %}
 {% raw %}
-<script src="/static/lib/datatable/zui.datatable.js"></script>
 <script>
-Vue.component('project-list',{
-	template: ' <tr>\
-					<td>{{index}}</td>\
-					<td>{{project.project_name}}</td>\
-					<td>{{project.date_created}}</td>\
-					<td><i class="icon-check-circle text-success"></i></td>\
-					<td>\
-						<a :href="project.project_id" class="btn btn-sm"><i class="icon-search"></i> detail</a>\
-						<a href="#" class="btn btn-sm text-danger"><i class="icon-trash"></i> delete</a>\
-					</td>\
-				</tr>',
-	props: ['project','index']
-});
-s = {}
-var app = new Vue({
-	el: "#panel",
-	data: {
-		projects:[],
-		loading:true
-	},
-	updated: function(){
-		$('table.datatable').datatable({sortable: true});
-		$('tr').click(function(){console.log(s=this)})
+	var vulnList = {
+		template: '\
+			<div class="col-md-4 col-sm-6 col-lg-3">\
+				<a :href="vuln.title" style="text-decoration: none;">\
+	    		<div class="option lead">\
+	    			{{vuln.title}}\
+	    		</div>\
+	    		</a>\
+			</div>',
+		props: ['vuln']
 	}
-});
-
-$.ajax({
-	type: 'get',
-	url: '/api/project/',
-	success: function(data){
-		app.loading=false;
-		app.projects=data;
-	},
-	error: function(data){
-		console.log(data);
-		new $.zui.Messager('Server error', {type:'warning', icon:'warning-danger'}).show();
-	}
-});
-
+	var app = new Vue({
+		el: '#main',
+		components: {
+			'vuln-list': vulnList
+		},
+		data: {
+			vulns: [],
+			vuln_title: '',
+		},
+		methods: {
+			add: function(){
+				console.log('add');
+				$.ajax({
+					url: '/api/vuln/',
+					data: {title: app.vuln_title},
+					type: 'post',
+					success: function(data){
+						app.vulns.push(data);
+						$('#addvuln').modal('hide')
+					},
+					error: function(data){
+						console.log(data);
+					}
+				});
+			}
+		},
+		created: function(){
+			console.log('created');
+			$.ajax({
+				url: '/api/vuln/',
+				type: 'get',
+				success: function(data){
+					app.vulns = data;
+					console.log(data);
+				},
+				error: function(data){
+					console.log(data);
+				}
+			})
+		}
+	})
 </script>
 {% endraw %}
 {% endblock %}

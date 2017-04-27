@@ -1,0 +1,384 @@
+{% extends "frame.html" %}
+
+{% block style %}
+	<style type="text/css">
+	#leftPanel{
+		border-right: 1px solid #ECEFF1;
+	}
+	#rightPanel{
+		border-left: 1px solid #ECEFF1;
+	}
+	a{
+		cursor: pointer;
+	}
+	</style>
+{% endblock %}
+
+{% block panel_title %}
+	{{ "Vulnerability"|title}}
+{% endblock %}
+
+{% block panel_body %}
+{% raw %}
+	<div class="col-sm-6" id="leftPanel">
+	  <div class="container">
+	    <div class="lead">
+	      Request
+	      <!-- <div class="dropdown pull-right">
+	        <button class="btn btn-sm btn-primary" data-toggle="dropdown"><i class="icon icon-rocket"></i></button>
+	        <ul class="dropdown-menu">
+	          <li class="dropdown-header">exp</li>
+	          <li class="divider"></li>
+	          <li v-for="i in exp">
+	          	<a v-on:click="load(i.titlei.payload)">{{i.name}}</a>
+	          </li>
+	          <li class="divider"></li>
+	        </ul>
+	      </div> -->
+	    </div>
+	    <form class="form-horizontal">
+	      <div class="form-group">
+	        <div class="input-group">
+	          <span class="input-group-addon">title</span>
+	          <input spellcheck="false" id="exp_title" class="form-control" v-model="param.exp_title" placeholder="exp title">
+	          <span class="input-group-btn">
+	            <button class="btn btn-default" type="button" title="create" @click="create"><i class="icon icon-plus"></i></button>
+	            <button class="btn btn-default" type="button" title="update" @click="update"><i class="icon icon-cloud-upload"></i></button>
+	            <button class="btn btn-default" type="button" title="delete" @click="remove"><i class="icon icon-trash"></i></button>
+
+	            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+	            <ul class="dropdown-menu">
+	              <li class="dropdown-header">exps</li>
+	              <li v-for="(i,index) in exps">
+	                <a v-on:click="load(i,index)">{{i.exp_title}}</a>
+	              </li>
+	            </ul>
+	          </span>
+	        </div>
+	      </div>
+	      <div class="form-group">
+	        <div class="input-group">
+	          <span class="input-group-addon">target</span>
+	          <textarea rows="1" spellcheck="false" id="target" class="form-control" v-model="param.target" :placeholder="target_hint"></textarea>
+	        </div>
+	      </div>
+	      <div class="form-group">
+	      	<div class="checkbox">
+	      	  <label><input type="checkbox" v-model="alternative" value="cookie"> cookie</label>&nbsp;&nbsp;
+	      	  <label><input type="checkbox" v-model="alternative" value="user_agent"> user-agent</label>&nbsp;&nbsp;
+	      	  <label><input type="checkbox" v-model="alternative" value="content_type"> content-type</label>&nbsp;&nbsp;
+	      	  <label><input type="checkbox" v-model="alternative" value="proxy"> proxy</label>&nbsp;&nbsp;
+	      	</div>
+	      </div>
+	      <div class="form-group" v-if="alternative.indexOf('cookie')>=0">
+	        <div class="input-group">
+	          <span class="input-group-addon">cookie</span>
+	      	  <textarea rows="1" spellcheck="false" class="form-control" v-model="param.cookie" placeholder="cookie field string"></textarea>
+	        </div>
+	      </div>
+	      <div class="form-group" v-if="alternative.indexOf('user_agent')>=0">
+	        <div class="input-group">
+	          <span class="input-group-addon">user-agent</span>
+	      	  <textarea rows="1" spellcheck="false" class="form-control" v-model="param.user_agent" placeholder="user-agent field string"></textarea>
+	        </div>
+	      </div>
+	      <div class="form-group" v-if="alternative.indexOf('content_type')>=0">
+	        <div class="input-group">
+	          <span class="input-group-addon">content-type</span>
+	      	  <textarea rows="1" spellcheck="false" class="form-control" v-model="param.content_type" placeholder="Content-Type"></textarea>
+	        </div>
+	      </div>
+	      <div class="form-group" v-if="alternative.indexOf('proxy')>=0">
+	        <div class="input-group">
+	          <span class="input-group-addon">proxy</span>
+	      	  <input spellcheck="false" class="form-control" v-model="param.proxy" placeholder="host:port">
+	        </div>
+	      </div>
+	      <div class="form-group">
+	        <label>payload</label>
+	        <div class="radio">
+	          <label><input type="radio" v-model="param.method" value="get" @click="choose"> GET</label>&nbsp;&nbsp;
+	          <label><input type="radio" v-model="param.method" value="post" @click="choose"> POST</label>&nbsp;&nbsp;
+	          <label><input type="radio" v-model="param.method" value="file" @click="choose"> FILE</label>
+	        </div>
+            <textarea rows="1" spellcheck="false" id="payload" placeholder="p1=1&p2=2&p3=param3" class="form-control" v-model="param.payload"></textarea>
+            <span class="input-group-addon fix-border fix-padding"></span>
+	      </div>
+	    </form>
+        <div>
+          <hr>
+          <button class="btn btn-primary" v-on:click="reset">Reset</button>
+          <button class="btn btn-primary pull-right" v-on:click="submit">Submit</button>
+        </div>
+	  </div>
+	</div>
+	<div class="col-sm-6" id="rightPanel">
+	  <div class="container">
+	    <div class="lead">Response</div>
+	    <textarea spellcheck="false" class="form-control" rows=16 v-model="response"></textarea>
+	    <hr>
+	    <div class="input-group">
+	      <span class="input-group-addon required">Regex</span>
+	      <input type="text" class="form-control" placeholder="regular expression">
+	      <span class="input-group-addon btn">Go</span>
+	      <span class="input-group-addon btn">Back</span>
+	    </div>
+	  </div>
+	</div>
+{% endraw %}
+{% endblock %}
+
+{% block modal%}
+{% raw %}
+{% endraw %}
+{% endblock %}
+
+{% block script %}
+{% raw %}
+<script>
+	var id_index = window.location.pathname.lastIndexOf('/')+1;
+	var app = new Vue({
+		el: '#main',
+		data: {
+			title:window.location.pathname.substr(id_index),
+			param: {
+				exp_index:-1,
+				exp_title:'',
+				method:'get',
+				target:'',
+				payload:'',
+				cookie:'',
+				user_agent:'',
+				proxy:'',
+				content_type:''
+			},
+			exps: [],
+			target_hint: 'url',
+			alternative:[],
+			response:''
+		},
+		methods: {
+			submit: function(){
+				if(!this.param.target && this.target_hint=='url'){
+					new $.zui.Messager('target is required', {type:'warning', icon:'warning-sign', time:10000}).show();
+					$('#target').focus();
+					return 1;
+				}
+				if(!this.param.target)
+					this.param.target = this.target_hint;
+				/*if(!this.param.payload)
+					this.param.payload = $('#payload').attr('placeholder')*/
+				if(this.param.hasOwnProperty('save'))
+					delete this.param.save;
+
+				/*var postData = this.param;
+				if(this.param.method=='file'){
+					postData = new FormData();
+					for(var i in this.param){
+						postData.append(i, this.param[i]);
+					}
+					console.log(postData);
+				}*/
+				$.ajax({
+					url: '/api/vuln/'+app.title,
+					type: 'put',
+					data: this.param,
+					success: function(data){
+						console.log(typeof(data));
+						app.response = data['content'];
+					},
+					error: function(data){
+						console.log(data);
+						app.response = data;
+						new $.zui.Messager(data.status+': '+data.statusText, {type:'warning', icon:'warning-sign', time:2000}).show();
+					}
+				});
+			},
+			reset: function(){
+				console.log('reset');
+				this.param = {exp_title:'',method:'get',target:'',payload:'',cookie:'',user_agent:'',proxy:''};
+				this.param.exp_index = -1;
+				this.target_hint = 'url';
+				this.alternative = [];
+				this.response = '';
+			},
+			load: function(exp,index){
+				console.log('index: ',index)
+				console.log(this.param);
+				this.param.exp_index = index;
+				this.param.exp_title = exp.exp_title;
+				this.target_hint = exp.target;
+				this.param.method = exp.method;
+				this.param.payload = exp.payload;
+				this.alternative = []
+				if(exp.cookie){
+					this.alternative.push('cookie');
+					this.param.cookie = exp.cookie;
+				}
+				if(exp.user_agent){
+					this.alternative.push('user_agent');
+					this.param.user_agent = exp.user_agent;
+				}
+				if(exp.content_type){
+					this.alternative.push('content_type');
+					this.param.content_type = exp.content_type;
+				}
+				if(exp.proxy){
+					this.alternative.push('proxy');
+					this.param.proxy = exp.proxy;
+				}
+			},
+			choose: function(){
+				console.log(this.param.method);
+				var payload_hint='';
+				if(this.param.method=='file')
+					payload_hint = '{\n\t"name": {\n\t\t"filename": "test.txt",\n\t\t"content": "1234567890"\n\t}\n}';
+				else
+					payload_hint = 'p1=1&p2=2&p3=param3';
+				$('#payload').attr('placeholder',payload_hint);
+			},
+			create: function(){
+				console.log('create');
+				if(!this.param.exp_title){
+					dialog('title is required','warning');
+					$('#exp_title').focus();
+					return 1;
+				}
+				if(!this.param.target){
+					dialog('target is required','warning');
+					$('#target').focus();
+					return 1;
+				}
+				if(!this.param.payload){
+					dialog('payload is required','warning');
+					$('#payload').focus();
+					return 1;
+				}
+				var data = app.param;
+				data['exp_index'] = -1;
+				data['save'] = true;
+				$.ajax({
+					url: '/api/vuln/'+app.title,
+					type: 'put',
+					data: data,
+					success: function(data){
+						app.exps.push(data);
+						app.param.exp_index = app.exps.length;
+						dialog('success!','success');
+					}
+				});
+			},
+			update: function(){
+				console.log('update');
+				if(this.param.exp_index<0){
+					dialog('exp is not exist, create first','warning');
+					return 1;
+				}
+				if(!this.param.exp_title){
+					dialog('title is required','warning');
+					$('#exp_title').focus();
+					return 1;
+				}
+				if(!this.param.payload){
+					dialog('payload is required','warning');
+					$('#payload').focus();
+					return 1;
+				}
+				if(this.alternative.indexOf('cookie')<0)
+					this.param.cookie = '';
+				if(this.alternative.indexOf('user_agent')<0)
+					this.param.user_agent = '';
+				if(this.alternative.indexOf('content_type')<0)
+					this.param.content_type = '';
+				if(this.alternative.indexOf('proxy')<0)
+					this.param.proxy = ''
+				var data = $.extend({},app.param);
+				if(!data.target)
+					data.target = this.target_hint;
+				data['save'] = true;
+				$.ajax({
+					url: '/api/vuln/'+app.title,
+					type: 'put',
+					data: data,
+					success: function(data){
+						app.exps[app.param.exp_index] = data;
+						dialog('success!','success');
+					}
+				});
+			},
+			remove: function(){
+				console.log('remove');
+				if(this.param.exp_index == -1){
+					dialog('unknown exp','warning');
+					return 1;
+				}
+				$.ajax({
+					url: '/api/vuln/'+app.title,
+					type: 'delete',
+					data: {exp_index: app.param.exp_index},
+					success: function(data){
+						app.exps.splice(data.exp_index,1);
+						app.reset();
+						dialog('success!','success');
+					}
+				});
+			},
+		},
+		updated:function(){
+			if(this.alternative.indexOf('cookie')<0)
+				this.param.cookie = '';
+			if(this.alternative.indexOf('user_agent')<0)
+				this.param.user_agent = '';
+			if(this.alternative.indexOf('content_type')<0)
+				this.param.content_type = '';
+			if(this.alternative.indexOf('proxy')<0)
+				this.param.proxy = ''
+			$('form textarea').autoHeight();
+		},
+		created: function(){
+			var that = this;
+			$.ajax({
+				url: '/api/vuln/'+that.title,
+				type: 'get',
+				success: function(data){
+					console.log(data);
+					if('title' in data)
+						that.exps = data.exps
+					else
+						dialog('vuln is not exist','warning');
+				}
+			})
+		},
+	})
+	function dialog(info,type){
+		new $.zui.Messager(info, {type:type, icon:type+'-sign', time:2000}).show();
+	}
+	$('document').ready(function(){
+		//From: http://blog.csdn.net/Elite_1989/article/details/49329313
+		jQuery.fn.extend({
+			autoHeight: function(){
+				return this.each(function(){
+					var $this = jQuery(this);
+					if( !$this.attr('_initAdjustHeight') ){
+						$this.attr('_initAdjustHeight', $this.outerHeight());
+					}
+					_adjustH(this).on('input', function(){
+						_adjustH(this);
+					});
+				});
+				/**
+				* 重置高度
+				* @param {Object} elem
+				*/
+				function _adjustH(elem){
+					var $obj = jQuery(elem);
+					return $obj.css({height: $obj.attr('_initAdjustHeight')}).height(elem.scrollHeight-10);
+				}
+			}
+		});
+		$('textarea').autoHeight();
+	})
+		
+</script>
+{% endraw %}
+{% endblock %}

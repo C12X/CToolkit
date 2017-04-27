@@ -1,6 +1,7 @@
 from lxml import etree
+from codecs import escape_decode
 
-def xmltodict(file='new.xml'):
+def xmltodict(file='testbyte.xml'):
 	root = etree.ElementTree(file=file).getroot()
 	hosts = root.findall('host')
 	if hosts:
@@ -20,7 +21,16 @@ def xmltodict(file='new.xml'):
 						pi['state'] = port.find('state').get('state')
 						pi['service'] = port.find('service').get('name')
 						if port.find('script') is not None:
-							pi['banner'] = port.find('script').get('output')
+							banner = port.find('script').get('output')
+							if port.find('script').get('id')=='http-title':
+								try:
+									banner = escape_decode(banner)[0].decode('utf8')
+								except:
+									try:
+										banner = escape_decode(banner)[0].decode('gbk')
+									except:
+										pass
+							pi['banner'] = banner
 						portinfo.append(pi)
 				else:
 					portinfo = []
@@ -36,7 +46,7 @@ def xmltodict(file='new.xml'):
 			# 	'portinfo':portinfo,
 			# 	'address':address
 			# })
-	# print(result)
+	print(result)
 	return result
 
 if __name__ == '__main__':

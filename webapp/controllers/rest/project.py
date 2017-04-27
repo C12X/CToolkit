@@ -29,3 +29,11 @@ class ProjectApi(Resource):
 	def put(self, project_id=None):
 		if project_id:
 			return {}
+
+	def delete(self, project_id=None):
+		if not project_id:
+			return {'error':'illegal param'}
+		else:
+			project = Project.objects(id=project_id).first()
+			project.delete()
+			return {'project_id':project_id}

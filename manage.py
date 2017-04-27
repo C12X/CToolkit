@@ -1,8 +1,7 @@
 import os, sys
 from flask_script import Manager, Server
 from webapp import create_app
-from webapp.models import mongo
-from webapp.models import Project
+from webapp.models import mongo, Project, Task
 from webapp.controllers.tasks import port_scanner as ps
 from webapp.extensions import celery, redis_store
 
@@ -17,7 +16,7 @@ def make_shell_context():
 	return dict(
 		app=app,
 		mongo=mongo,
-		Project=Project,
+		Task=Task,
 		ps=ps,
 		celery=celery,
 		redis=redis_store

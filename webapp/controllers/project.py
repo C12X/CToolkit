@@ -5,10 +5,10 @@ from flask import (
 	render_template)
 
 project_blueprint = Blueprint(
-	"project",
+	'project',
 	__name__,
 	template_folder='../templates/project',
-	url_prefix="/project")
+	url_prefix='/project')
 
 @project_blueprint.route('/')
 def overview():
@@ -21,8 +21,8 @@ def project(project_id):
 @project_blueprint.route('/overview')
 def host_list():
 	host = request.args.get('host',None)
-	return jsonify({"host":host})
+	return jsonify({'host':host})
 
 @project_blueprint.route('/dir')
 def path_over():
-	return "dir"
+	return 'dir'

@@ -1,0 +1,241 @@
+{% extends "frame.html" %}
+
+{% block style %}
+<link rel="stylesheet" type="text/css" href="/static/lib/summernote/dist/summernote.css">
+<style type="text/css">
+	.panel-body{
+		padding: 0
+	}
+	.left-menu{
+		padding-right: 0
+	}
+	.note-menu{
+		margin-top: 10px;
+		height: 500px;
+		overflow: scroll;
+	}
+	.note-list{
+		margin-top: 10px;
+		width: 200px;
+	}
+	.editor{
+		padding: 0
+	}
+	.note-editor{
+		margin: 0;
+		border-radius: 0;
+	}
+	.icon-remove-sign{
+		color: #EA644A;
+	}
+	.icon-plus-sign{
+		color: #38B03F;
+	}
+	a{
+		cursor: pointer;
+	}
+</style>
+{% endblock %}
+
+{% block panel_title %}
+	{{ "Note"|title}}
+{% endblock %}
+
+{% block panel_body %}
+{% raw %}
+	<div class="col-xs-3 col-md-2 left-menu">
+	  <div class="note-menu scrollbar-hover">
+	    <div class="input-group">
+	      <input id="title" type="text" class="form-control" placeholder="new note" v-model="newNote">
+	      <span class="input-group-addon btn" v-on:click="add_new_note">
+	        <i class="icon icon-plus"></i>
+	      </span>
+	    </div>
+	    <div class="note-list">
+	      <ul class="tree tree-folders" id="noteTree" data-ride="tree">
+	        <li v-if="notes.length" is="note-list" v-for="(note,index) in notes" :note="note" :id="note.note_id" @remove="remove_note(index)"></li>
+	      </ul>
+	    </div>
+	  </div>
+	</div>
+	<div class="col-xs-9 col-md-10 editor">
+	  <div id="summernote">
+	  </div>
+	</div>
+{% endraw %}
+{% endblock %}
+
+{% block script %}
+{% raw %}
+<script src="/static/js/summernote.js"></script>
+<script>
+	var noteList = {
+		name: 'note-list',
+		template: '\
+			<li>\
+			  <a href="#" v-on:click="load_note">\
+			    {{note.title}}</a> <a @click="add_new_note"><i class="icon icon-plus-sign"></i> </a> <a @click="$emit(\'remove\')"><i class="icon icon-remove-sign"></i></a>\
+			  <ul v-if="note.children.length">\
+			    <li is="note-list" v-for="(node,index) in note.children" v-bind:note="node" :id="node.note_id" @remove="remove_note(index)"></li>\
+			  </ul>\
+			</li>',
+		props: ['note'],
+		methods: {
+			load_note: function(){
+				//change current note
+				app.current_id = this.note.note_id;
+				$.ajax({
+					url: '/api/note/'+app.current_id,
+					type: 'get',
+					data: {code: true},
+					success: function(data){
+						//console.log(data.code);
+						$('#summernote').summernote('code', data.code);
+					}
+				})
+				var that = this;
+				// has child and had got children list
+				if(this.note.children.length){
+					return 0;
+				}
+				// has child but had not send ajax request
+				if(this.note.has_child){
+					$.ajax({
+						url: '/api/note/'+that.note.note_id,
+						type: 'get',
+						success: function(data){
+							//console.log(data);
+							that.note.children = data;
+						}
+					})
+				// has no child
+				}else{
+					console.log('has no child')
+				}
+			},
+			add_new_note: function(){
+				if(!app.newNote){
+					new $.zui.Messager('Title is required', {type:'warning', icon:'warning-danger'}).show();
+					$('#title').focus();
+					return 1;
+				};
+				var that = this;
+				console.log(this.note.note_id)
+				$.ajax({
+					url: '/api/note/'+that.note.note_id,
+					type: 'post',
+					data: {title: app.newNote},
+					success: function(data){
+						that.note.children.push({
+							note_id: data['note_id'],
+							title: app.newNote,
+							children: [],
+						})
+						app.newNote = '';
+						$('#noteTree').data('zui.tree').show($('#'+that.note.note_id));
+						app.newNote = ''
+					},
+				});
+			},
+			remove_note: function(index){
+				console.log('rm: '+this.note.children[index].note_id);
+				var that = this;
+				//console.log(this.note.children[index].note_id)
+				$.ajax({
+					url: '/api/note/'+that.note.children[index].note_id,
+					type: 'delete',
+					success: function(data){
+						console.log(data);
+						that.note.children.splice(index,1);
+					}
+				})
+			},
+		}
+	}
+
+	var app = new Vue({
+		el: '#panel',
+		components:{
+			'note-list': noteList,
+		},
+		data:{
+			notes: [],
+			newNote: '',
+			current_id: '',
+		},
+		methods:{
+			add_new_note: function(){
+				if(!app.newNote){
+					new $.zui.Messager('Title is required', {type:'warning', icon:'warning-danger'}).show();
+					$('#title').focus();
+					return 1;
+				};
+				var that = this;
+				$.ajax({
+					url: '/api/note/',
+					type: 'post',
+					data: {title: this.newNote},
+					success: function(data){
+						that.notes.push({
+							note_id: data['note_id'],
+							title: that.newNote,
+							children: [],
+						})
+						that.newNote = '';
+					},
+				});
+			},
+			remove_note: function(index){
+				console.log('rm: '+this.notes[index].note_id);
+				var that = this;
+				$.ajax({
+					url: '/api/note/'+that.notes[index].note_id,
+					type: 'delete',
+					success: function(data){
+						console.log(data);
+						that.notes.splice(index,1);
+					}
+				});
+			},
+		},
+		created: function(){
+			var that = this;
+			$.ajax({
+				url: '/api/note/',
+				type: 'get',
+				success: function(data){
+					that.notes = data;
+					if(data.length)
+						that.current_id = that.notes[0].note_id;
+				}
+			})
+		}
+	});
+
+	$(document).ready(function(){
+		//$('#tree').tree({'animate':true});
+		$('#summernote').summernote({
+			height: 470,
+			minHeight: 470,
+			callbacks: {
+				onChange: function(code) {
+					//console.log(app.current_id);
+					//console.log('onChange:', code);
+					$.ajax({
+						url: '/api/note/'+app.current_id,
+						type: 'put',
+						data: {
+							code: code
+						},
+						success: function(data){
+							console.log(data)
+						}
+					})
+				}
+			}
+		});
+		
+	});
+</script>
+{% endraw %}
+{% endblock %}

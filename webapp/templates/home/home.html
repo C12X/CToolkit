@@ -1,4 +1,34 @@
 {% extends "frame.html" %}
+
+{% block style %}
+	<style type="text/css">
+		#markdown{
+			max-height: 500px;
+			overflow: scroll;
+		}
+	</style>
+{% endblock %}
+
 {% block panel_title %}
 	{{ "home"|title}}
+{% endblock %}
+
+{% block panel_body %}
+	<div class="container" id="markdown">
+		{{readme}}
+	</div>
+{% endblock %}
+
+{% block script %}
+<!-- https://github.com/evilstreak/markdown-js -->
+<script src="/static/js/markdown.js"></script>
+<script>
+	$(document).ready(function(){
+		$("#markdown").html(
+			markdown.toHTML(
+				$('#markdown').text()
+			)
+		);
+	})
+</script>
 {% endblock %}

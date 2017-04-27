@@ -22,7 +22,7 @@
 <body>
 <div id="main">
   <header>
-    <div class="navbar navbar-inverse" id="navbar" role="banner">
+    <div class="navbar navbar-inverse" id="navbar" role="banner" style="border-radius: 0px;">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".zui-navbar-collapse">
@@ -56,9 +56,6 @@
       </div>
     </div>
   </header>
-{#{% for message in get_flashed_messages() %}
-  <p style="color: red;">{{ message }}</p>
-{% endfor %}#}
   <div class="container">
     <!-- Left Menu -->
     <div class="left-menu" style="float:left; width:150px;">
@@ -66,28 +63,19 @@
         <button class="btn btn-primary" data-toggle="modal" data-target="#create_project"><i class="icon-edit"></i> CREATE</button>
         <button class="btn"><i class="icon-cloud-upload"></i> UPLOAD</button>
         <ul class="nav nav-primary">
-          <li><a href="javascript:;"><i class="icon-history"></i> History</a></li>
+          <li><a href={{url_for('home.index')}}><i class="icon-home"></i> Home</a></li>
           <li><a href={{url_for('project.overview')}}><i class="icon-stack"></i> Projects</a></li>
-          <li><a href={{url_for('project.overview')}}><i class="icon-eye-open"></i> Vulnerability</a></li>
-          <li class="nav-parent">
-            <a href="javascript:;"><i class="icon-eye-open"></i> Vulnerability</a>
-            <ul class="nav">
-              <li><a href="javascript:;">Today</a></li>
-              <li><a href="javascript:;">Tomarrow</a></li>
-              <li><a href="javascript:;">Yestorday</a></li>
-              <li><a href="javascript:;">This Week</a></li>
-            </ul>
-          </li>
-          <li><a href="javascript:;"><i class="icon-book"></i> Note</a></li>
+          <li><a href={{url_for('vuln.overview')}}><i class="icon-eye-open"></i> Vulnerability</a></li>
+          <li><a href="{{url_for('note.overview')}}"><i class="icon-book"></i> Note</a></li>
           <li><a href="javascript:;"><i class="icon-pie-chart"></i> Report</a></li>
-          <li class="nav-parent">
+          <!-- <li class="nav-parent">
             <a href="javascript:;"><i class="icon-tasks"></i> Status</a>
             <ul class="nav">
               <li><a href="javascript:;"><i class="icon-circle-blank"></i> Ready</a></li>
               <li><a href="javascript:;"><i class="icon-play-sign"></i> Ongoing</a></li>
               <li><a href="javascript:;"><i class="icon-ok-sign"></i> Completed</a></li>
             </ul>
-          </li>
+          </li> -->
         </ul>
       </nav>
     </div>
@@ -101,34 +89,6 @@
       </div>
       <div class="panel-body" style="word-break: break-all;min-height:300px">
         {% block panel_body %}
-        {% raw %}
-        <span v-bind:title="message">
-            {{message}}
-        </span>
-        <p v-if="message">
-          true
-        </p>
-        <h1 v-else>
-          false
-        </h1>
-        <span v-for="item in items">
-          {{ item }}
-        </span>
-        <button v-on:click="alertmessage">alert</button>
-
-        <table class="table table-hover table-bordered">
-          <thead>
-            <tr>
-              <th>test1</th>
-              <th>test2</th>
-            </tr>
-          </thead>
-          <tbody id="testcop">
-            <tr v-for="item in items" is="component-tr"></tr>
-          </tbody>
-        </table>
-
-        {% endraw %}
         {% endblock %}
       </div>
     </div>
@@ -201,30 +161,7 @@
     });
   </script>
   {% block script %}
-  <script>
-  var componentTr ={
-    template: "<tr><th>1111111111</th><th>2222222222</th></tr>"
-  };
-  var app = new Vue({
-    el: '#panel',
-    components: {
-      'component-tr': componentTr
-    },
-    data: {
-      message: 'You loaded this page on ' + new Date(),
-      items:[1,2,3,4,5,6,7,8,9,10]
-    },
-    methods: {
-      alertmessage: function(){
-        var a=1;
-        alert(this.message);
-      },
-      test: function(){
-        console.log('test');
-      }
-    }
-  })
-  </script>
+
   {% endblock %}
 </body>
 </html>

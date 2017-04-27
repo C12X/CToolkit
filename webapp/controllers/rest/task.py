@@ -1,10 +1,10 @@
-from flask import jsonify
 from flask_restful import Resource
 from .parsers import task_get_parser
 from .parsers import task_post_parser
 from webapp.models import Project
 from webapp.models import Task
 from webapp.extensions import celery
+from webapp.extensions import redis_store
 from webapp.controllers.tasks import port_scanner
 from webapp.process.xml_to_dict import xmltodict
 import datetime
@@ -12,6 +12,10 @@ import datetime
 class TaskApi(Resource):
 	def get(self, task_id=None):
 		if task_id:
+			args = task_get_parser.parse_args()
+			if args.get('process'):
+				stdout = redis_store.hget('task_stdout',task_id).decode('utf-8').strip()
+				return {'process': stdout}
 			task = Task.objects(id=task_id).first()
 			if not task.result:
 				result = celery.AsyncResult(task.celery_id).get()
@@ -64,7 +68,7 @@ class TaskApi(Resource):
 			task.save(write_concern={"w":1, "j":True})
 
 			if args.category == 0:
-				celery_task = port_scanner.run_nmap.apply_async([args.target, str(task.id)])
+				celery_task = port_scanner.run_nmap.apply_async([args.target, str(task.id), args.level])
 			elif args.category == 1:
 				celery_task = port_scanner.scan.apply_async([args.target])
 			elif args.category ==2:
@@ -76,3 +80,10 @@ class TaskApi(Resource):
 			task.save(write_concern={"w":1, "j":True})
 			return {'celery_id':task.celery_id,'task_category':task.category, 'task_target':task.target, 'task_status':task.status, 'date_created':task.date_created.strftime('%Y-%m-%d %H:%M:%S'),'task_id':str(task.id)}
 
+	def delete(self, task_id=None):
+		if not task_id:
+			return {'error':'illegal param'}
+		else:
+			task = Task.objects(id=task_id).first()
+			task.delete()
+			return {'task_id':task_id}

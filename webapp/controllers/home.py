@@ -12,4 +12,6 @@ home_blueprint = Blueprint(
 
 @home_blueprint.route('/')
 def index():
-	return render_template('home.html')
+	with open('README.md','rb') as f:
+		readme = f.read()
+	return render_template('home.html',readme=readme.decode('utf-8'))

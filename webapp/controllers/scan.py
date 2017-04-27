@@ -1,7 +1,5 @@
 from flask import (
 	Blueprint,
-	request,
-	jsonify,
 	render_template)
 
 scan_blueprint = Blueprint(
