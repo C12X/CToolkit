@@ -2,6 +2,12 @@
 
 {% block style %}
 	<style type="text/css">
+		.progress{
+			margin: auto;
+		}
+		.progress-bar{
+			width: 100%;
+		}
 	</style>
 {% endblock %}
 
@@ -165,14 +171,14 @@
 	}
 	var taskList = {
 		template: '\
-			<tr @click="processing">\
+			<tr>\
 				<td>{{index}}</td>\
 				<td>{{task.task_category|category}}</td>\
 				<td class="text-wordwrap">{{task.task_target}}</td>\
 				<td>{{task.date_created}}</td>\
 				<td>\
-					<div style="margin:auto" class="progress progress-striped" v-bind:class="{active: task.task_status!=\'SUCCESS\'}">\
-						<div class="progress-bar" v-bind:class="{\'progress-bar-success\': task.task_status==\'SUCCESS\'}" style="width: 100%">\
+					<div @click="processing" class="progress progress-striped" v-bind:class="{active: task.task_status!=\'SUCCESS\'}">\
+						<div class="progress-bar" v-bind:class="{\'progress-bar-success\': task.task_status==\'SUCCESS\'}">\
 							<span>{{task.task_status.toLowerCase()}}</span>\
 						</div>\
 					</div>\

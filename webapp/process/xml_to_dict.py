@@ -1,7 +1,7 @@
 from lxml import etree
 from codecs import escape_decode
 
-def xmltodict(file='testbyte.xml'):
+def xmltodict(file='test.xml'):
 	root = etree.ElementTree(file=file).getroot()
 	hosts = root.findall('host')
 	if hosts:

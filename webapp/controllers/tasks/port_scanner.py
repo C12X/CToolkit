@@ -3,7 +3,7 @@ from webapp.extensions import (
 	redis_store)
 from webapp.models import Task
 from subprocess import Popen, PIPE, CalledProcessError
-import time, json
+import time, os
 
 @celery.task()
 def test(sec):
@@ -30,17 +30,20 @@ def save_result(result, task_id):
 
 @celery.task()
 def run_nmap(target, task_id, level):
+	# make output dir
+	if not os.path.exists('/tmp/nmap-output'):
+		os.makedirs('/tmp/nmap-output')
 	cmds = [
 		# -sn:ping扫描,即主机发现
 		# -n :不对IP进行域名反向解析
-		# -Pn:不检测主机存活
+		# -P0:跳过主机存活检测直接扫端口
 		# -PE:使用ICMP echo
 		# is alive
-		'sudo nmap {} -v -sn -PE -n -oX {} --min-hostgroup 1024 --min-parallelism 1024',
+		'nmap -v -sn -PE -n --min-hostgroup 1024 --min-parallelism 1024 {} -oX {}',
 		# default common port
-		'sudo nmap {} -v --open --system-dns -Pn --script=banner,http-title -oX {} --min-hostgroup 1024 --min-parallelism 1024',
+		'nmap -v --open --system-dns -P0 --script=banner,http-title --min-hostgroup 1024 --min-parallelism 1024 {} -oX {}',
 		# all port
-		'sudo nmap {} -v -p 1-65535 --open --system-dns -Pn --script=banner,http-title -oX {} --min-hostgroup 1024 --min-parallelism 1024',
+		'nmap -v -p 1-65535 --open --system-dns -P0 --script=banner,http-title --min-hostgroup 1024 --min-parallelism 1024 {} -oX {}',
 	]
 	path = '/tmp/nmap-output/{}.xml'.format(task_id)
 	cmd = cmds[level].format(target, path)

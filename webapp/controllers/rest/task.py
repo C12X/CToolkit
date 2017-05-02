@@ -18,13 +18,16 @@ class TaskApi(Resource):
 				return {'process': stdout}
 			task = Task.objects(id=task_id).first()
 			if not task.result:
-				result = celery.AsyncResult(task.celery_id).get()
-				if 'path' in result.keys():
+				celery_task = celery.AsyncResult(task.celery_id)
+				if celery_task.successful():
+					result = celery.AsyncResult(task.celery_id).get()
+				# result = {'path':'/tmp/nmap-output/5902b3a01d41c869ddbed5de.xml'}
+				# if 'path' in result.keys():
 					# task.result = {'path':result['path'],'raw':open(result['path']).read()}
 					# read the nmap output xml and save useful data into mongodb
 					task.result = xmltodict(result['path'])
 				else:
-					task.result = result
+					task.result = []
 				task.save()
 			return {'task_id':str(task.id), 'task_result':task.result}
 		else:
@@ -68,11 +71,11 @@ class TaskApi(Resource):
 			task.save(write_concern={"w":1, "j":True})
 
 			if args.category == 0:
-				celery_task = port_scanner.run_nmap.apply_async([args.target, str(task.id), args.level])
+				celery_task = port_scanner.run_nmap.apply_async([args.target.strip(), str(task.id), args.level])
 			elif args.category == 1:
-				celery_task = port_scanner.scan.apply_async([args.target])
+				celery_task = port_scanner.scan.apply_async([args.target.strip()])
 			elif args.category ==2:
-				celery_task = port_scanner.scan.apply_async([args.target])
+				celery_task = port_scanner.scan.apply_async([args.target.strip()])
 			# after above, create a celery task with celery_task.id
 
 			task.celery_id = celery_task.id
