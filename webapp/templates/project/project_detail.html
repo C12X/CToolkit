@@ -82,7 +82,7 @@
 	                <a data-toggle="collapse" :data-parent="'#host'+index" :href="'#host'+index">{{result.host}}</a>
 	              </h4>
 	            </div>
-	            <div :id="'host'+index" class="panel-collapse collapse in">
+	            <div :id="'host'+index" class="panel-collapse collapse" :class="{in: result.portinfo.length}">
 	              <div class="panel-body">
 	                <table class="table table-hover table-condensed" >
 	                  <tbody>
@@ -203,6 +203,9 @@
 				this.$emit('show_detail');
 			},
 			delete_task: function(){
+				if(!confirm('Are you sure?')){
+					return 1;
+				}
 				var task_id = this.task.task_id;
 				$.ajax({
 					url: '/api/task/'+task_id,

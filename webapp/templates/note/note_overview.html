@@ -31,6 +31,9 @@
 	.icon-plus-sign{
 		color: #38B03F;
 	}
+	.icon-edit-sign{
+		color: #03B8CF;
+	}
 	a{
 		cursor: pointer;
 	}
@@ -74,7 +77,7 @@
 		template: '\
 			<li>\
 			  <a href="#" v-on:click="load_note">\
-			    {{note.title}}</a> <a @click="add_new_note"><i class="icon icon-plus-sign"></i> </a> <a @click="$emit(\'remove\')"><i class="icon icon-remove-sign"></i></a>\
+			    {{note.title}}</a> <a @click="add_new_note"><i class="icon icon-plus-sign"></i></a><a @click="$emit(\'remove\')"><i class="icon icon-remove-sign"></i></a><a @click="edit_note_name"><i class="icon icon-edit-sign"></i></a>\
 			  <ul v-if="note.children.length">\
 			    <li is="note-list" v-for="(node,index) in note.children" v-bind:note="node" :id="node.note_id" @remove="remove_note(index)"></li>\
 			  </ul>\
@@ -137,7 +140,18 @@
 					},
 				});
 			},
+			edit_note_name: function(){
+				if(!app.newNote){
+					new $.zui.Messager('Title is required', {type:'warning', icon:'warning-danger'}).show();
+					$('#title').focus();
+					return 1;
+				};
+				console.log(app.newNote);
+			},
 			remove_note: function(index){
+				if(!confirm('Are you sure?')){
+					return 1;
+				}
 				console.log('rm: '+this.note.children[index].note_id);
 				var that = this;
 				//console.log(this.note.children[index].note_id)
@@ -186,6 +200,9 @@
 				});
 			},
 			remove_note: function(index){
+				if(!confirm('Are you sure?')){
+					return 1;
+				}
 				console.log('rm: '+this.notes[index].note_id);
 				var that = this;
 				$.ajax({

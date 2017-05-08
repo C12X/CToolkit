@@ -50,6 +50,9 @@ var projectList = {
 	props: ['project','index'],
 	methods: {
 		delete_project: function(){
+			if(!confirm('Are you sure?')){
+				return 1;
+			}
 			console.log('test');
 			$.ajax({
 				url: '/api/project/'+this.project.project_id,
