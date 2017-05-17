@@ -11,11 +11,9 @@ from .extensions import(
 	redis_store)
 from .controllers.home import home_blueprint
 from .controllers.project import project_blueprint
-# from .controllers.scan import scan_blueprint
 from .controllers.vuln import vuln_blueprint
 from .controllers.note import note_blueprint
 
-from .controllers.rest.post import PostApi, task_status
 from .controllers.rest.project import ProjectApi
 from .controllers.rest.task import TaskApi
 from .controllers.rest.vuln import VulnApi
@@ -59,7 +57,6 @@ def create_app(object_name):
 		'/api/note/',
 		'/api/note/<note_id>',
 		endpoint='api.note')
-	rest_api.add_resource(PostApi, '/api/post')
 	rest_api.init_app(app)
 
 	#celery

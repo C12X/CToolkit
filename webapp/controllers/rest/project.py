@@ -11,7 +11,7 @@ class ProjectApi(Resource):
 			project = Project.objects(id=project_id).first_or_404()
 			return {'id':str(project.id), 'project_name':project.project_name}
 		# without id, return top 10
-		projects = Project.objects.order_by('-date_created').paginate(1,10).items
+		projects = Project.objects.order_by('-date_created').all()
 		return [{'project_id':str(i.id),'project_name':i.project_name,'date_created':i.date_created.strftime('%Y-%m-%d %H:%M:%S')} for i in projects]
 
 	def post(self, project_id=None):

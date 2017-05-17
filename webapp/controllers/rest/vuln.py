@@ -45,7 +45,6 @@ class VulnApi(Resource):
 
 		# args: method,target,payload,cookie,useragent,proxy,exp_title,exp_index
 		args = vuln_put_parser.parse_args()
-		# print(args)
 		vuln = Vuln.objects(title=title).first()
 
 		# create or update exploits
@@ -82,8 +81,6 @@ class VulnApi(Resource):
 				'http':'http://'+args.proxy,
 				'https':'https://'+args.proxy
 			} if args.proxy else {}
-			# print(proxies)
-			
 			# start request
 			try:
 				# get
@@ -141,7 +138,7 @@ class VulnApi(Resource):
 				print('got error when reading stream from response: '+str(e))
 				# thought get error, content was saved
 				pass
-			# choose encoding
+			# encoding
 			encoding = r.encoding if r.encoding else 'utf-8'
 			encoding = 'utf-8' if 'ISO' in encoding else encoding
 			content = content.replace(b'\x00',''.encode(encoding))

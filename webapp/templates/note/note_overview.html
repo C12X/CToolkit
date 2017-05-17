@@ -1,7 +1,7 @@
 {% extends "frame.html" %}
 
 {% block style %}
-<link rel="stylesheet" type="text/css" href="/static/lib/summernote/dist/summernote.css">
+<link rel="stylesheet" type="text/css" href="/static/css/summernote.css">
 <style type="text/css">
 	.panel-body{
 		padding: 0
@@ -77,7 +77,7 @@
 		template: '\
 			<li>\
 			  <a href="#" v-on:click="load_note">\
-			    {{note.title}}</a> <a @click="add_new_note"><i class="icon icon-plus-sign"></i></a><a @click="$emit(\'remove\')"><i class="icon icon-remove-sign"></i></a><a @click="edit_note_name"><i class="icon icon-edit-sign"></i></a>\
+			    {{note.title}}</a> <a @click="add_new_note"><i class="icon icon-plus-sign"></i></a><a @click="$emit(\'remove\')"><i class="icon icon-remove-sign"></i></a><!--<a @click="edit_note_name"><i class="icon icon-edit-sign"></i></a>-->\
 			  <ul v-if="note.children.length">\
 			    <li is="note-list" v-for="(node,index) in note.children" v-bind:note="node" :id="node.note_id" @remove="remove_note(index)"></li>\
 			  </ul>\

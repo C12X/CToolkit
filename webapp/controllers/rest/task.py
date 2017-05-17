@@ -5,7 +5,7 @@ from webapp.models import Project
 from webapp.models import Task
 from webapp.extensions import celery
 from webapp.extensions import redis_store
-from webapp.controllers.tasks import port_scanner
+from webapp.tasks import port_scanner
 from webapp.process.xml_to_dict import xmltodict
 import datetime
 
@@ -34,7 +34,7 @@ class TaskApi(Resource):
 			args = task_get_parser.parse_args()
 			# specified project
 			if args.project_id:
-				tasks = Task.objects(project=args.project_id).order_by('-date_created').paginate(1,10).items
+				tasks = Task.objects(project=args.project_id).order_by('-date_created').all()
 			# all projects
 			else:
 				tasks = Task.objects.order_by('-date_created').all()

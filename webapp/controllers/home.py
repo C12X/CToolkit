@@ -1,7 +1,5 @@
 from flask import (
 	Blueprint,
-	request,
-	jsonify,
 	render_template)
 
 home_blueprint = Blueprint(

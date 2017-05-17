@@ -2,7 +2,7 @@ import os, sys
 from flask_script import Manager, Server
 from webapp import create_app
 from webapp.models import mongo, Project, Task
-from webapp.controllers.tasks import port_scanner as ps
+from webapp.tasks import port_scanner as ps
 from webapp.extensions import celery, redis_store
 
 env = os.environ.get('WEBAPP_ENV', 'dev')
