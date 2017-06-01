@@ -10,6 +10,10 @@
 ```bash
 pip install -r requirements.txt
 ```
+安装nmap
+```bash
+apt install nmap
+```
 安装及运行celery
 ```bash
 apt install celery
