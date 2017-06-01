@@ -41,7 +41,7 @@ def run_nmap(target, task_id, level):
 		# is alive
 		'nmap -v -sn -PE -n --min-hostgroup 1024 --min-parallelism 1024 {} -oX {}',
 		# default common port
-		'nmap -v --open --system-dns -P0 --script=banner,http-title --min-hostgroup 1024 --min-parallelism 1024 {} -oX {}',
+		'nmap -v --open --system-dns -Pn --script=banner,http-title --min-hostgroup 1024 --min-parallelism 1024 {} -oX {}',
 		# all port
 		'nmap -v -p 1-65535 --open --system-dns -P0 --script=banner,http-title --min-hostgroup 1024 --min-parallelism 1024 {} -oX {}',
 	]
