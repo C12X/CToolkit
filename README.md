@@ -3,6 +3,41 @@
 
 ---
 　　CToolkit是一款面向安全行业从业者的渗透测试工具集系统，由三大功能模块组成：资产整理、漏洞利用、笔记，主要实现了主机开放端口及服务信息的收集，已知web应用漏洞的利用，以及测试过程中的有用信息记录，涵盖了渗透测试的几个重要的步骤。
+## Install & Launch
+>以下命令均在命令行完成
+
+安装python3所需模块
+```bash
+pip install -r requirements.txt
+```
+安装及运行celery
+```bash
+apt install celery
+celery worker -A celery_runner -l info
+```
+安装及运行mongodb
+```bash
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6
+echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.4.list
+apt update
+apt install -y mongodb-org
+service mongod start
+```
+安装redis
+```bash
+apt install redis-server
+service redis-server start
+```
+修改manage.py的绑定ip地址
+```python
+manager.add_command("server", Server(host="指定主机"))
+```
+启动Flask
+```bash
+python3 manage.py server
+```
+最后浏览器访问http://主机:5000/即可
+
 ## Modules
 
 ### 0x01 Projects ###
